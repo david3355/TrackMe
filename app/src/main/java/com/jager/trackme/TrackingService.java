@@ -6,6 +6,8 @@ import android.os.IBinder;
 
 public class TrackingService extends Service
 {
+       public final static String SERVICENAME = "com.jager.trackme.TrackingService";
+
        public TrackingService()
        {
        }
