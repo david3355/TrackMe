@@ -17,27 +17,26 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:layout_margin="5dp"
-            android:orientation="horizontal">
+            >
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/latitude"
+                android:text="@string/lastmeasure"
                 />
 
             <TextView
-                android:id="@+id/txt_latitude"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:textSize="20sp"
-                android:layout_gravity="center"
-                android:text="23.23"
+                android:id="@+id/txt_lasttime"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="5dp"
+                android:text="2016-12-23 02:32:12"
+                android:textSize="15sp"
                 />
+
         </LinearLayout>
-
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -46,23 +45,40 @@
             android:orientation="horizontal">
 
             <TextView
+                android:id="@+id/txt_position"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="@string/longitude"
+                android:text="@string/position"
+                />
+
+            <TextView
+                android:id="@+id/txt_latitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:text="25.2124123"
+                android:textSize="@dimen/position_textsize"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text=";"
                 />
 
             <TextView
                 android:id="@+id/txt_longitude"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:textSize="20sp"
                 android:layout_gravity="center"
-                android:text="23.23"
+                android:layout_margin="5dp"
+                android:text="49.2235233"
+                android:textSize="@dimen/position_textsize"
                 />
+            />
         </LinearLayout>
-
 
     </LinearLayout>
 
@@ -72,16 +88,20 @@
         android:orientation="horizontal">
 
         <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:id="@+id/btn_map"
+            android:layout_width="@dimen/minibutton_size"
+            android:layout_height="@dimen/minibutton_size"
             android:layout_margin="5dp"
+            android:scaleType="fitXY"
             android:src="@drawable/maps"
             />
 
         <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:id="@+id/btn_settings"
+            android:layout_width="@dimen/minibutton_size"
+            android:layout_height="@dimen/minibutton_size"
             android:layout_margin="5dp"
+            android:scaleType="fitXY"
             android:src="@drawable/settings"
             />
 
@@ -89,10 +109,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dp">
-            
         </ExpandableListView>
-        
-
 
     </LinearLayout>
 

@@ -3,8 +3,11 @@
     <string name="title_activity_map">Map</string>
     <string name="start_track">Start tracking</string>
     <string name="stop_track">Stop tracking</string>
-    <string name="latitude">Latitude:</string>
-    <string name="longitude">Longitude:</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
     <string name="tracking_on">Tracking ON</string>
     <string name="tracking_off">Tracking OFF</string>
+    <string name="lastmeasure">Last measure taken at:</string>
+    <string name="position">Position:</string>
+
 </resources>
