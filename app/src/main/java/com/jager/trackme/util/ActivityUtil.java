@@ -2,6 +2,8 @@ package com.jager.trackme.util;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -52,6 +54,13 @@ public class ActivityUtil
                      }
               }
               return false;
+       }
+
+       public static void copyTextToClipboard(String text, Context context)
+       {
+              ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+              ClipData clip = ClipData.newPlainText("position", text);
+              clipboard.setPrimaryClip(clip);
        }
 
 }

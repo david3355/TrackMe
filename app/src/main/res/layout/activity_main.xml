@@ -80,6 +80,33 @@
             />
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/accuracy"
+                />
+
+            <TextView
+                android:id="@+id/txt_accuracy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/position_textsize"
+                android:layout_margin="5dp"
+                android:layout_gravity="center"
+                android:text="23m"
+                />
+
+        </LinearLayout>
+
+
+
     </LinearLayout>
 
     <LinearLayout
@@ -93,7 +120,7 @@
             android:layout_height="@dimen/minibutton_size"
             android:layout_margin="5dp"
             android:scaleType="fitXY"
-            android:src="@drawable/maps"
+            android:src="@drawable/map"
             />
 
         <ImageButton

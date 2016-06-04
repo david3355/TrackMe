@@ -9,5 +9,6 @@
     <string name="tracking_off">Tracking OFF</string>
     <string name="lastmeasure">Last measure taken at:</string>
     <string name="position">Position:</string>
+    <string name="accuracy">Accuracy:</string>
 
 </resources>
