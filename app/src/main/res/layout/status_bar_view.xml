@@ -1,17 +1,17 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="100dp"
+    android:layout_height="wrap_content"
     android:background="@color/colorBlue"
-    android:orientation="vertical">
+    android:orientation="horizontal">
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginTop="5dp"
         >
 
         <ImageView
@@ -27,29 +27,47 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:textSize="20sp"
+            android:textSize="13sp"
+            android:text="Tracking ON"
             />
 
     </LinearLayout>
 
     <Button
         android:id="@+id/btn_trackingstart"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/svcbutton_height"
         android:layout_margin="10dp"
         android:background="@color/colorGreen"
         android:text="@string/start_track"
         android:visibility="visible"
-        />
+        android:padding="4dp"/>
 
     <Button
         android:id="@+id/btn_trackingstop"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/svcbutton_height"
         android:layout_margin="10dp"
         android:background="@color/colorRed"
         android:text="@string/stop_track"
         android:visibility="gone"
+        android:padding="4dp"/>
+        />
+
+    <ImageView
+        android:id="@+id/img_map"
+        android:layout_width="@dimen/minibutton_size"
+        android:layout_height="@dimen/minibutton_size"
+        android:layout_margin="5dp"
+        android:src="@drawable/map"
+        />
+
+    <ImageView
+        android:id="@+id/img_settings"
+        android:layout_width="@dimen/minibutton_size"
+        android:layout_height="@dimen/minibutton_size"
+        android:layout_margin="5dp"
+        android:src="@drawable/settings"
         />
 
 </LinearLayout>

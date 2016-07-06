@@ -8,21 +8,32 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
 import android.os.ResultReceiver;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.jager.trackme.intercomponentcommunicator.InterComponentCommunicator;
 import com.jager.trackme.intercomponentcommunicator.InterComponentData;
 
 public class TrackingService extends Service implements LocationListener
 {
-       public final static String SERVICENAME = "com.jager.trackme.TrackingService";
-       public final static String KEY_RESULTRECEIVER = "loc_svc_resultreceiver";
-       public final static int LOCATION_SEND = 110;
-       public final static int MESSAGE_RESULTCODE = 101;
+       public final static String SERVICENAME = TrackingService.class.getName();
+       public static final int MSG_REPLIER = 10;
+       public static final int MSG_UNBIND = 11;
+       public final static int MSG_LOCATION_SEND = 100;
+       public final static int MSG_INFOMESSAGE = 110;
+
        private boolean locationingRuns = false;
-       private ResultReceiver replier;
+       private Thread worker;
+       private final Messenger messenger = new Messenger(new IncomingHandler());
+
+       private Messenger replier = null;
+
 
        protected LocationManager locationManager;
 
@@ -30,9 +41,9 @@ public class TrackingService extends Service implements LocationListener
        public int onStartCommand(Intent intent, int flags, int startId)
        {
               locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-              replier = intent.getParcelableExtra(KEY_RESULTRECEIVER);
               startLocationing();
               return super.onStartCommand(intent, flags, startId);
+
        }
 
        @Override
@@ -45,11 +56,40 @@ public class TrackingService extends Service implements LocationListener
        @Override
        public IBinder onBind(Intent intent)
        {
-              return null;
+              return messenger.getBinder();
        }
 
+       class IncomingHandler extends Handler
+       {
+              @Override
+              public void handleMessage(Message msg)
+              {
+                     switch (msg.what)
+                     {
+                            case MSG_REPLIER:
+                                   replier = msg.replyTo;
+                                   Log.d("TestService", "Replier object gained from message");
+                                   break;
+                            case MSG_UNBIND:
+                                   replier = null;
+                                   Log.d("TestService", "An activity unbinded");
+                                   break;
+                            default:
+                                   super.handleMessage(msg);
+                     }
+              }
+       }
 
-       private void startLocationing()
+       private class Worker implements Runnable
+       {
+              @Override
+              public void run()
+              {
+                     locationHandling();
+              }
+       }
+
+       private void locationHandling()
        {
               if (!locationingRuns)
               {
@@ -58,7 +98,7 @@ public class TrackingService extends Service implements LocationListener
                      final long MIN_DIST = 10;
                      if (isGpsEnabled())
                      {
-                            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)== PackageManager.PERMISSION_GRANTED)
+                            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                             {
                                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BTW_UPDATES, MIN_DIST, this);
                                    locationingRuns = true;
@@ -67,16 +107,28 @@ public class TrackingService extends Service implements LocationListener
               }
        }
 
+       private void startLocationingOnThread()
+       {
+              worker = new Thread(new Worker());
+              worker.start();
+       }
+
+       private void startLocationing()
+       {
+              locationHandling();
+       }
+
        private void stopLocationing()
        {
               if (locationingRuns)
               {
-                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)== PackageManager.PERMISSION_GRANTED)
+                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                      {
                             locationManager.removeUpdates(this);
                             locationingRuns = false;
                      }
               }
+              if (worker != null && worker.isAlive()) worker.interrupt();
        }
 
        private boolean isGpsEnabled()
@@ -97,12 +149,20 @@ public class TrackingService extends Service implements LocationListener
                      icd.latitude = data.getLatitude();
                      icd.longitude = data.getLongitude();
                      icd.accuracy = data.getAccuracy();
-                     replier.send(LOCATION_SEND, InterComponentCommunicator.getBundle(icd));
-              }
-              catch(Exception e)
+                     Message msg = createMessage(MSG_LOCATION_SEND, InterComponentCommunicator.getBundle(icd));
+                     replier.send(msg);
+              } catch (Exception e)
               {
                      //When activity is not active
               }
+       }
+
+       private Message createMessage(int messageKey, Bundle data)
+       {
+              Message msg = new Message();
+              msg.setData(data);
+              msg.what = messageKey;
+              return msg;
        }
 
        private void sendMessageToActivity(String message)
@@ -111,14 +171,13 @@ public class TrackingService extends Service implements LocationListener
               {
                      Bundle data = new Bundle();
                      data.putString(InterComponentData.KEY_MSG, message);
-                     replier.send(MESSAGE_RESULTCODE, data);
-              }
-              catch(Exception e)
+                     Message msg = createMessage(MSG_INFOMESSAGE, data);
+                     replier.send(msg);
+              } catch (Exception e)
               {
                      //When activity is not active
               }
        }
-
 
 
        @Override

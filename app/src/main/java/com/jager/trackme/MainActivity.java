@@ -1,9 +1,15 @@
 package com.jager.trackme;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Color;
-import android.location.Location;
-import android.os.ResultReceiver;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -11,6 +17,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -25,16 +32,19 @@ import com.jager.trackme.util.ActivityUtil;
 
 import org.joda.time.DateTime;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener, ServiceConnection
 {
        private GoogleMap partial_map;
        private ImageView img_trackingstatus;
        private TextView txt_trackingstatus, txt_position, txt_latitude, txt_longitude, txt_accuracy, txt_lasttime;
        private Button btn_start_tracking, btn_stop_tracking;
-       private ImageButton btn_map, btn_settings;
+       private ImageView img_map, img_settings;
        private CircleOptions circleOptions;
+       private MarkerOptions marker;
 
-       private ResultReceiver svcResultReceiver;
+       private Messenger messenger = null;
+       private boolean boundToService;
+       private final Messenger responseMessenger = new Messenger(new IncomingHandler());
 
 
        @Override
@@ -53,19 +63,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
               btn_start_tracking = (Button) findViewById(R.id.btn_trackingstart);
               btn_stop_tracking = (Button) findViewById(R.id.btn_trackingstop);
-              btn_map = (ImageButton) findViewById(R.id.btn_map);
-              btn_settings = (ImageButton) findViewById(R.id.btn_settings);
+              img_map = (ImageView) findViewById(R.id.img_map);
+              img_settings = (ImageView) findViewById(R.id.img_settings);
 
               btn_start_tracking.setOnClickListener(this);
               btn_stop_tracking.setOnClickListener(this);
-              btn_map.setOnClickListener(this);
-              btn_settings.setOnClickListener(this);
+              img_map.setOnClickListener(this);
+              img_settings.setOnClickListener(this);
               txt_position.setOnClickListener(this);
               txt_latitude.setOnClickListener(this);
               txt_longitude.setOnClickListener(this);
+              boundToService = false;
 
-              setResultReceiver();
-              initCircle();
+              initCircle();       //TODO: a circle-t ki kell venni, itt csak marker kell, majd a térképhez kell circle, talán
 
               // Obtain the SupportMapFragment and get notified when the map is ready to be used.
               SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -73,7 +83,54 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
               mapFragment.getMapAsync(this);
        }
 
-       private void initCircle()
+       @Override
+       public void onServiceConnected(ComponentName className, IBinder service)
+       {
+              boundToService = true;
+              setCommunicationBetweenComponents(service);
+       }
+
+       @Override
+       public void onServiceDisconnected(ComponentName className)
+       {
+              messenger = null;
+              boundToService = false;
+       }
+
+       private void setCommunicationBetweenComponents(IBinder service)
+       {
+              messenger = new Messenger(service);
+              Message message = new Message();
+              message.what = TrackingService.MSG_REPLIER;
+              message.replyTo = responseMessenger;
+              trySendMessage(message);
+       }
+
+       class IncomingHandler extends Handler
+       {
+              // Process messages coming from the service
+              @Override
+              public void handleMessage(final Message msg)
+              {
+                     processMessageFromService(msg);
+              }
+       }
+
+       private void processMessageFromService(Message msg)
+       {
+              Bundle data = msg.getData();
+              switch (msg.what)
+              {
+                     case TrackingService.MSG_LOCATION_SEND:
+                            locationChanged(InterComponentCommunicator.readBundle(data));
+                            break;
+                     case TrackingService.MSG_INFOMESSAGE:
+                            processMessage(data.getString(InterComponentData.KEY_MSG));
+                            break;
+              }
+       }
+
+       private void initCircle() //TODO ezt törölni kell majd
        {
               circleOptions = new CircleOptions();
               circleOptions.fillColor(Color.rgb(255, 0, 0));
@@ -81,38 +138,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
               circleOptions.strokeWidth(2);
        }
 
-       private void setResultReceiver()
-       {
-              svcResultReceiver = new ResultReceiver(null)
-              {
-                     @Override
-                     protected void onReceiveResult(int resultCode, Bundle resultData)
-                     {
-                            switch (resultCode)
-                            {
-                                   case TrackingService.LOCATION_SEND:
-                                          locationChanged(InterComponentCommunicator.readBundle(resultData));
-                                          break;
-                                   case TrackingService.MESSAGE_RESULTCODE:
-                                          processMessage(resultData.getString(InterComponentData.KEY_MSG));
-                                          break;
-                            }
-
-                     }
-              };
-       }
-
-
        @Override
        public void onMapReady(GoogleMap googleMap)
        {
               partial_map = googleMap;
-
-              // Add a marker in Sydney and move the camera
-              LatLng sydney = new LatLng(-34, 151);
-              partial_map.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-              partial_map.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
               partial_map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener()
               {
                      @Override
@@ -127,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
        protected void onResume()
        {
               initStatusBar();
+              bindService(); // Bind must done after initializing the status bar, because bindig the service starts the service, but not with the positioning
               super.onResume();
        }
 
@@ -134,16 +164,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
        protected void onPause()
        {
               super.onPause();
+              unbindService();
        }
 
        private void initStatusBar()
        {
               if (ActivityUtil.isServiceRunning(TrackingService.SERVICENAME, this))
               {
-                     trackingStarted();
+                     setTrackingStartedState();
               } else
               {
-                     trackingStopped();
+                     setTrackingStoppedState();
               }
        }
 
@@ -158,10 +189,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                      case R.id.btn_trackingstop:
                             stopTracking();
                             break;
-                     case R.id.btn_map:
+                     case R.id.img_map:
                             startActivity(MapActivity.class);
                             break;
-                     case R.id.btn_settings:
+                     case R.id.img_settings:
                             startActivity(SettingsActivity.class);
                             break;
                      case R.id.txt_position:
@@ -176,34 +207,57 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
               }
        }
 
+       private void bindService()
+       {
+              Intent svc = new Intent(this, TrackingService.class);
+              bindService(svc, this, Context.BIND_AUTO_CREATE);
+       }
+
+       private void unbindService()
+       {
+              if (boundToService)
+              {
+                     sendUnbindMessage();
+                     unbindService(this);
+                     boundToService = false;
+              }
+       }
+
+       private void sendUnbindMessage()
+       {
+              Message msg = Message.obtain(null, TrackingService.MSG_UNBIND, 0, 0);
+              trySendMessage(msg);
+       }
+
        private void startTracking()
        {
               startPositioningService();
-              trackingStarted();
+              setTrackingStartedState();
               ActivityUtil.popup("Tracking started!", this);
        }
 
        private void stopTracking()
        {
               stopPositioningService();
-              trackingStopped();
+              setTrackingStoppedState();
               ActivityUtil.popup("Tracking stopped!", this);
        }
 
        private void startPositioningService()
        {
+              if (!boundToService) bindService();
               Intent svc = new Intent(this, TrackingService.class);
-              svc.putExtra(TrackingService.KEY_RESULTRECEIVER, svcResultReceiver);
               startService(svc);
        }
 
        private void stopPositioningService()
        {
+              unbindService();
               Intent svc = new Intent(this, TrackingService.class);
               stopService(svc);
        }
 
-       private void trackingStarted()
+       private void setTrackingStartedState()
        {
               btn_start_tracking.setVisibility(View.GONE);
               btn_stop_tracking.setVisibility(View.VISIBLE);
@@ -211,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
               txt_trackingstatus.setText(ActivityUtil.getStringRes(this, R.string.tracking_on));
        }
 
-       private void trackingStopped()
+       private void setTrackingStoppedState()
        {
               btn_start_tracking.setVisibility(View.VISIBLE);
               btn_stop_tracking.setVisibility(View.GONE);
@@ -231,6 +285,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
               startActivity(activity);
        }
 
+       private void trySendMessage(Message message)
+       {
+              try
+              {
+                     if (message != null) messenger.send(message);
+              } catch (RemoteException e)
+              {
+                     e.printStackTrace();
+              }
+       }
+
        public void locationChanged(InterComponentData data)
        {
               final double latitude = data.latitude;
@@ -248,16 +313,19 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             txt_accuracy.setText(String.valueOf(accuracy));
                             txt_lasttime.setText(DateTime.now().toString("YYYY-MM-dd HH:mm:ss"));
 
+                            marker = new MarkerOptions().position(newpos).title(String.format("[%s;%s]", newpos.latitude, newpos.longitude));
+                            partial_map.clear();
+                            partial_map.addMarker(marker);
                             circleOptions.center(newpos);
                             circleOptions.radius(accuracy);
                             partial_map.addCircle(circleOptions);
-                            partial_map.moveCamera(CameraUpdateFactory.newLatLng(newpos));
+                            partial_map.moveCamera(CameraUpdateFactory.newLatLngZoom(newpos, 15));
                      }
               });
        }
 
        private void processMessage(String message)
        {
-              // TODO: process message
+              Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
        }
 }

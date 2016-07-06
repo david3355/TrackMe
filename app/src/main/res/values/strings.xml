@@ -7,7 +7,7 @@
     <string name="longitude">Longitude</string>
     <string name="tracking_on">Tracking ON</string>
     <string name="tracking_off">Tracking OFF</string>
-    <string name="lastmeasure">Last measure taken at:</string>
+    <string name="lastmeasure">Measured at:</string>
     <string name="position">Position:</string>
     <string name="accuracy">Accuracy:</string>
 

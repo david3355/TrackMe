@@ -1,12 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
-<items version="2" >
+<items version="2" />
 
-    <item
-        jar="C:\Users\Jager\.gradle\caches\modules-2\files-2.1\joda-time\joda-time\2.9.4\1c295b462f16702ebe720bbb08f62e1ba80da41b\joda-time-2.9.4.jar"
-        jumboMode="false"
-        revision="22.0.1"
-        sha1="1c295b462f16702ebe720bbb08f62e1ba80da41b">
-        <dex dex="D:\GoogleDrive\MyPROGRAMS\Android\ANDROIDSTUDIO\TrackMe\app\build\intermediates\pre-dexed\debug\joda-time-2.9.4_019493319bbc85e2ca48d4c47ba190b15a191bd3.jar" />
-    </item>
-
-</items>
