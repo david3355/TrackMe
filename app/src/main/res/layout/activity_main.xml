@@ -72,7 +72,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left|center_vertical"
-                android:layout_marginLeft="5dp"
+                android:layout_margin="3dp"
                 android:text="2016-12-23 02:32:12"
                 android:textSize="@dimen/locdata_textsize"
                 />
@@ -94,7 +94,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left|center_vertical"
-                android:layout_margin="5dp"
+                android:layout_margin="3dp"
                 android:text="23m"
                 android:textSize="@dimen/locdata_textsize"
                 />
@@ -102,6 +102,16 @@
         </TableRow>
 
     </TableLayout>
+
+
+
+
+
+    <!--TODO Ide jön majd még az iránytű-->
+
+
+
+
 
 
     <fragment

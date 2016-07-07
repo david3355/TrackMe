@@ -1,24 +1,23 @@
 package com.jager.trackme;
 
-import android.Manifest;
 import android.app.Service;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.os.ResultReceiver;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.widget.Toast;
 
+import com.jager.trackme.database.LocationsManager;
+import com.jager.trackme.database.PositionsTableDef;
 import com.jager.trackme.intercomponentcommunicator.InterComponentCommunicator;
 import com.jager.trackme.intercomponentcommunicator.InterComponentData;
+import com.jager.trackme.positioning.Positioning;
+
+import org.joda.time.DateTime;
 
 public class TrackingService extends Service implements LocationListener
 {
@@ -28,22 +27,18 @@ public class TrackingService extends Service implements LocationListener
        public final static int MSG_LOCATION_SEND = 100;
        public final static int MSG_INFOMESSAGE = 110;
 
-       private boolean locationingRuns = false;
-       private Thread worker;
+       private LocationsManager locDatabase;
        private final Messenger messenger = new Messenger(new IncomingHandler());
-
        private Messenger replier = null;
-
-
-       protected LocationManager locationManager;
+       private Positioning positioning;
 
        @Override
        public int onStartCommand(Intent intent, int flags, int startId)
        {
-              locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+              locDatabase = LocationsManager.getInstance();
+              positioning = new Positioning(this, this);
               startLocationing();
               return super.onStartCommand(intent, flags, startId);
-
        }
 
        @Override
@@ -80,65 +75,24 @@ public class TrackingService extends Service implements LocationListener
               }
        }
 
-       private class Worker implements Runnable
-       {
-              @Override
-              public void run()
-              {
-                     locationHandling();
-              }
-       }
-
-       private void locationHandling()
-       {
-              if (!locationingRuns)
-              {
-                     //locationManager.requestSingleUpdate();
-                     final long MIN_TIME_BTW_UPDATES = 1000 * 30;
-                     final long MIN_DIST = 10;
-                     if (isGpsEnabled())
-                     {
-                            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-                            {
-                                   locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BTW_UPDATES, MIN_DIST, this);
-                                   locationingRuns = true;
-                            }
-                     }
-              }
-       }
-
-       private void startLocationingOnThread()
-       {
-              worker = new Thread(new Worker());
-              worker.start();
-       }
-
        private void startLocationing()
        {
-              locationHandling();
+              positioning.startPositioning();
        }
 
        private void stopLocationing()
        {
-              if (locationingRuns)
-              {
-                     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-                     {
-                            locationManager.removeUpdates(this);
-                            locationingRuns = false;
-                     }
-              }
-              if (worker != null && worker.isAlive()) worker.interrupt();
+              positioning.stopPositioning();
        }
 
        private boolean isGpsEnabled()
        {
-              return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+              return positioning.isGpsEnabled();
        }
 
        private boolean isNetworkEnabled()
        {
-              return locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+              return positioning.isNetworkEnabled();
        }
 
        private void sendDataBackToActivity(Location data)
@@ -179,10 +133,17 @@ public class TrackingService extends Service implements LocationListener
               }
        }
 
+       private void saveLocation(Location location)
+       {
+              PositionsTableDef model = new PositionsTableDef(location.getLatitude(), location.getLongitude(), (int) location.getAccuracy(), DateTime.now().getMillis());
+              locDatabase.saveNewPosition(model);
+       }
+
 
        @Override
        public void onLocationChanged(Location location)
        {
+              saveLocation(location);
               sendDataBackToActivity(location);
        }
 

@@ -14,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +25,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.jager.trackme.database.LocationsManager;
+import com.jager.trackme.database.PositionsTableDef;
 import com.jager.trackme.intercomponentcommunicator.InterComponentCommunicator;
 import com.jager.trackme.intercomponentcommunicator.InterComponentData;
 import com.jager.trackme.util.ActivityUtil;
@@ -45,6 +46,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
        private Messenger messenger = null;
        private boolean boundToService;
        private final Messenger responseMessenger = new Messenger(new IncomingHandler());
+       private LocationsManager locDatabase;
+       private final static String DATETIME_FORMAT = "YYYY-MM-dd HH:mm:ss";
 
 
        @Override
@@ -75,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
               txt_longitude.setOnClickListener(this);
               boundToService = false;
 
+              locDatabase = LocationsManager.getInstance(this);
               initCircle();       //TODO: a circle-t ki kell venni, itt csak marker kell, majd a térképhez kell circle, talán
 
               // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -130,6 +134,30 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
               }
        }
 
+       private void loadLastLocation()
+       {
+              PositionsTableDef lastpos = locDatabase.getLatestPosition();
+              String s_latitude = "";
+              String s_longitude = "";
+              String s_accuracy = "";
+              String s_time = "";
+              if(lastpos != null)
+              {
+                     s_latitude = String.valueOf(lastpos.getLatitude());
+                     s_longitude = String.valueOf(lastpos.getLongitude());
+                     s_accuracy = String.valueOf(lastpos.getAccuracy());
+                     s_time = new DateTime(lastpos.getTimestamp()).toString(DATETIME_FORMAT);
+                     LatLng newpos= new LatLng(lastpos.getLatitude(), lastpos.getLongitude());
+                     marker = new MarkerOptions().position(newpos).title(String.format("[%s;%s]", newpos.latitude, newpos.longitude));
+                     partial_map.addMarker(marker);
+                     partial_map.moveCamera(CameraUpdateFactory.newLatLngZoom(newpos, 15));
+              }
+              txt_latitude.setText(s_latitude);
+              txt_longitude.setText(s_longitude);
+              txt_accuracy.setText(s_accuracy);
+              txt_lasttime.setText(s_time);
+       }
+
        private void initCircle() //TODO ezt törölni kell majd
        {
               circleOptions = new CircleOptions();
@@ -150,6 +178,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             startActivity(MapActivity.class);
                      }
               });
+              loadLastLocation();
        }
 
        @Override
@@ -311,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             txt_latitude.setText(String.valueOf(latitude));
                             txt_longitude.setText(String.valueOf(longitude));
                             txt_accuracy.setText(String.valueOf(accuracy));
-                            txt_lasttime.setText(DateTime.now().toString("YYYY-MM-dd HH:mm:ss"));
+                            txt_lasttime.setText(DateTime.now().toString(DATETIME_FORMAT));
 
                             marker = new MarkerOptions().position(newpos).title(String.format("[%s;%s]", newpos.latitude, newpos.longitude));
                             partial_map.clear();
