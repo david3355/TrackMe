@@ -77,12 +77,12 @@ public class TrackingService extends Service implements LocationListener
 
        private void startLocationing()
        {
-              positioning.startPositioning();
+              if (positioning != null) positioning.startPositioning();
        }
 
        private void stopLocationing()
        {
-              positioning.stopPositioning();
+              if (positioning != null) positioning.stopPositioning();
        }
 
        private boolean isGpsEnabled()

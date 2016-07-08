@@ -35,7 +35,7 @@ import org.joda.time.DateTime;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener, ServiceConnection
 {
-       private GoogleMap partial_map;
+       private GoogleMap map;
        private ImageView img_trackingstatus;
        private TextView txt_trackingstatus, txt_position, txt_latitude, txt_longitude, txt_accuracy, txt_lasttime;
        private Button btn_start_tracking, btn_stop_tracking;
@@ -149,8 +149,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                      s_time = new DateTime(lastpos.getTimestamp()).toString(DATETIME_FORMAT);
                      LatLng newpos= new LatLng(lastpos.getLatitude(), lastpos.getLongitude());
                      marker = new MarkerOptions().position(newpos).title(String.format("[%s;%s]", newpos.latitude, newpos.longitude));
-                     partial_map.addMarker(marker);
-                     partial_map.moveCamera(CameraUpdateFactory.newLatLngZoom(newpos, 15));
+                     map.addMarker(marker);
+                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(newpos, 15));
               }
               txt_latitude.setText(s_latitude);
               txt_longitude.setText(s_longitude);
@@ -169,8 +169,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
        @Override
        public void onMapReady(GoogleMap googleMap)
        {
-              partial_map = googleMap;
-              partial_map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener()
+              map = googleMap;
+              map.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener()
               {
                      @Override
                      public void onMapLongClick(LatLng latLng)
@@ -343,12 +343,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             txt_lasttime.setText(DateTime.now().toString(DATETIME_FORMAT));
 
                             marker = new MarkerOptions().position(newpos).title(String.format("[%s;%s]", newpos.latitude, newpos.longitude));
-                            partial_map.clear();
-                            partial_map.addMarker(marker);
+                            map.clear();
+                            map.addMarker(marker);
                             circleOptions.center(newpos);
                             circleOptions.radius(accuracy);
-                            partial_map.addCircle(circleOptions);
-                            partial_map.moveCamera(CameraUpdateFactory.newLatLngZoom(newpos, 15));
+                            map.addCircle(circleOptions);
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(newpos, 15));
                      }
               });
        }
