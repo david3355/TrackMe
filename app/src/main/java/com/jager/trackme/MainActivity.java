@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
        private boolean boundToService;
        private final Messenger responseMessenger = new Messenger(new IncomingHandler());
        private LocationsManager locDatabase;
-       private final static String DATETIME_FORMAT = "YYYY-MM-dd HH:mm:ss";
+       public final static String DATETIME_FORMAT = "YYYY-MM-dd HH:mm:ss";
 
 
        @Override

@@ -89,29 +89,36 @@
                 android:textSize="@dimen/locdatakey_textsize"
                 />
 
-            <TextView
-                android:id="@+id/txt_accuracy"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <LinearLayout
                 android:layout_gravity="left|center_vertical"
                 android:layout_margin="3dp"
-                android:text="23m"
-                android:textSize="@dimen/locdata_textsize"
-                />
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/txt_accuracy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="23"
+                    android:textSize="@dimen/locdata_textsize"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="1dp"
+                    android:text="m"
+                    android:textSize="@dimen/locdata_textsize"
+                    />
+
+            </LinearLayout>
+
 
         </TableRow>
 
     </TableLayout>
 
 
-
-
-
     <!--TODO Ide jön majd még az iránytű-->
-
-
-
-
 
 
     <fragment
@@ -121,7 +128,6 @@
         xmlns:map="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context="com.jager.trackme.MapActivity"/>
+        android:layout_height="match_parent"/>
 
 </LinearLayout>

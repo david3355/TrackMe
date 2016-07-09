@@ -10,5 +10,7 @@
     <string name="lastmeasure">Measured at:</string>
     <string name="position">Position:</string>
     <string name="accuracy">Accuracy:</string>
+    <string name="from">From:</string>
+    <string name="to">To:</string>
 
 </resources>

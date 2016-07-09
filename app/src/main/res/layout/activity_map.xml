@@ -1,8 +1,72 @@
-<fragment android:id="@+id/map"
-          android:name="com.google.android.gms.maps.SupportMapFragment"
-          xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:map="http://schemas.android.com/apk/res-auto"
-          xmlns:tools="http://schemas.android.com/tools"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          tools:context="com.jager.trackme.MapActivity"/>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TableRow>
+
+            <TextView
+                android:layout_gravity="left|center_vertical"
+                android:layout_marginLeft="@dimen/date_margin"
+                android:text="@string/from"/>
+
+            <TextView
+                android:textSize="@dimen/date_textsize"
+                android:layout_gravity="left|center_vertical"
+                android:layout_margin="@dimen/date_margin"
+                android:textStyle="bold"
+                android:text="2016. 07. 08. 12:55"
+                android:id="@+id/txt_from"/>
+
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:layout_gravity="left|center_vertical"
+                android:layout_marginLeft="@dimen/date_margin"
+                android:text="@string/to"/>
+
+            <TextView
+                android:textSize="@dimen/date_textsize"
+                android:layout_gravity="left|center_vertical"
+                android:layout_margin="@dimen/date_margin"
+                android:textStyle="bold"
+                android:text="2016. 08. 10. 23:10"
+                android:id="@+id/txt_to"/>
+
+        </TableRow>
+
+    </TableLayout>
+
+<ExpandableListView
+    android:id="@+id/explist_intervals"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:divider="#A4C739"
+    android:childDivider="#a4ba9f"
+    android:dividerHeight="0.5dp"
+    android:scrollbars="vertical"
+    android:minHeight="100dp"
+    android:clickable="true"
+    android:fadeScrollbars="false"
+    >
+</ExpandableListView>
+
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.jager.trackme.MapActivity"/>
+
+</LinearLayout>

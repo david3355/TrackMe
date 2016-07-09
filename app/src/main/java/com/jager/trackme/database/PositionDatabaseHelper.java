@@ -227,7 +227,7 @@ class PositionDatabaseManager
               String[] fields =
                       {PositionsTableDef.COLUMN_ID, PositionsTableDef.COLUMN_LATITUDE, PositionsTableDef.COLUMN_LONGITUDE, PositionsTableDef.COLUMN_ACCURACY, PositionsTableDef.COLUMN_TIMESTAMP};
               Cursor c = mDB.query(PositionsTableDef.DB_TABLE, fields,
-                      String.format("%s BETWEEN '%s' AND '%s'", DatabaseField, FromValue, ToValue), null, null, null, null);
+                      String.format("%s BETWEEN %s AND %s", DatabaseField, FromValue, ToValue), null, null, null, null);
               List<PositionsTableDef> data = new ArrayList<>();
               boolean hasData = c.moveToFirst();
               if (hasData) do
