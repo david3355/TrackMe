@@ -30,6 +30,7 @@ import com.jager.trackme.database.PositionsTableDef;
 import com.jager.trackme.intercomponentcommunicator.InterComponentCommunicator;
 import com.jager.trackme.intercomponentcommunicator.InterComponentData;
 import com.jager.trackme.util.ActivityUtil;
+import com.jager.trackme.util.DateTimeFormats;
 
 import org.joda.time.DateTime;
 
@@ -47,7 +48,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
        private boolean boundToService;
        private final Messenger responseMessenger = new Messenger(new IncomingHandler());
        private LocationsManager locDatabase;
-       public final static String DATETIME_FORMAT = "YYYY-MM-dd HH:mm:ss";
 
 
        @Override
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                      s_latitude = String.valueOf(lastpos.getLatitude());
                      s_longitude = String.valueOf(lastpos.getLongitude());
                      s_accuracy = String.valueOf(lastpos.getAccuracy());
-                     s_time = new DateTime(lastpos.getTimestamp()).toString(DATETIME_FORMAT);
+                     s_time = new DateTime(lastpos.getTimestamp()).toString(DateTimeFormats.DATETIME_FORMAT);
                      LatLng newpos= new LatLng(lastpos.getLatitude(), lastpos.getLongitude());
                      marker = new MarkerOptions().position(newpos).title(String.format("[%s;%s]", newpos.latitude, newpos.longitude));
                      map.addMarker(marker);
@@ -340,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             txt_latitude.setText(String.valueOf(latitude));
                             txt_longitude.setText(String.valueOf(longitude));
                             txt_accuracy.setText(String.valueOf(accuracy));
-                            txt_lasttime.setText(DateTime.now().toString(DATETIME_FORMAT));
+                            txt_lasttime.setText(DateTime.now().toString(DateTimeFormats.DATETIME_FORMAT));
 
                             marker = new MarkerOptions().position(newpos).title(String.format("[%s;%s]", newpos.latitude, newpos.longitude));
                             map.clear();

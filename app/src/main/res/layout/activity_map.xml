@@ -16,13 +16,30 @@
                 android:layout_marginLeft="@dimen/date_margin"
                 android:text="@string/from"/>
 
-            <TextView
-                android:textSize="@dimen/date_textsize"
-                android:layout_gravity="left|center_vertical"
-                android:layout_margin="@dimen/date_margin"
-                android:textStyle="bold"
-                android:text="2016. 07. 08. 12:55"
-                android:id="@+id/txt_from"/>
+            <LinearLayout>
+
+                <TextView
+                    android:id="@+id/txt_from_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left|center_vertical"
+                    android:layout_margin="@dimen/date_margin"
+                    android:text="2016. 07. 08."
+                    android:textSize="@dimen/date_textsize"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/txt_from_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left|center_vertical"
+                    android:layout_margin="@dimen/date_margin"
+                    android:text="12:55"
+                    android:textColor="@color/colorLightBlue"
+                    android:textSize="@dimen/date_textsize"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
 
         </TableRow>
 
@@ -33,31 +50,53 @@
                 android:layout_marginLeft="@dimen/date_margin"
                 android:text="@string/to"/>
 
-            <TextView
-                android:textSize="@dimen/date_textsize"
-                android:layout_gravity="left|center_vertical"
-                android:layout_margin="@dimen/date_margin"
-                android:textStyle="bold"
-                android:text="2016. 08. 10. 23:10"
-                android:id="@+id/txt_to"/>
+
+            <LinearLayout>
+
+                <TextView
+                    android:id="@+id/txt_to_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left|center_vertical"
+                    android:layout_margin="@dimen/date_margin"
+                    android:text="2016. 07. 08."
+                    android:textSize="@dimen/date_textsize"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/txt_to_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left|center_vertical"
+                    android:layout_margin="@dimen/date_margin"
+                    android:text="12:55"
+                    android:textColor="@color/colorLightBlue"
+                    android:textSize="@dimen/date_textsize"
+                    android:textStyle="bold"/>
+            </LinearLayout>
 
         </TableRow>
 
     </TableLayout>
 
-<ExpandableListView
-    android:id="@+id/explist_intervals"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:divider="#A4C739"
-    android:childDivider="#a4ba9f"
-    android:dividerHeight="0.5dp"
-    android:scrollbars="vertical"
-    android:minHeight="100dp"
-    android:clickable="true"
-    android:fadeScrollbars="false"
-    >
-</ExpandableListView>
+    <ExpandableListView
+        android:id="@+id/explist_intervals"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:childDivider="#a4ba9f"
+        android:clickable="true"
+        android:divider="#A4C739"
+        android:dividerHeight="0.5dp"
+        android:fadeScrollbars="false"
+        android:minHeight="100dp"
+        android:scrollbars="vertical"
+        >
+    </ExpandableListView>
+
+    <SeekBar
+        android:id="@+id/seekbar_locations"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"/>
 
     <fragment
         android:id="@+id/map"
@@ -68,5 +107,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="com.jager.trackme.MapActivity"/>
+
 
 </LinearLayout>
