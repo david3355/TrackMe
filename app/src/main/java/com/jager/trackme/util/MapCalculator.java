@@ -3,13 +3,14 @@ package com.jager.trackme.util;
 import android.location.Location;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 
 import java.util.List;
 
 /**
  * Created by Jager on 2016.07.08..
  */
-public class Calculator
+public class MapCalculator
 {
        public static LatLng calculateAverageLocation(List<LatLng> locations)
        {
@@ -27,7 +28,7 @@ public class Calculator
         * Calculates the uppermost, lowermost, leftmost and rightmost points, as the window of locations, and calculates the midpoints of these
         * @param locations
         */
-       public static LatLng getLocationWindow(List<LatLng> locations)
+       public static LatLngBounds getLocationWindow(List<LatLng> locations)
        {
               LatLng pos; // longitude ~ x and latitude ~ y
               int min_up, min_bottom, min_left, min_right;
@@ -43,9 +44,17 @@ public class Calculator
                      if (x < locations.get(min_left).longitude) min_left = i;
                      if (x > locations.get(min_right).longitude) min_right = i;
               }
-              double lat = (locations.get(min_up).latitude + locations.get(min_bottom).latitude)/2;
-              double lng = (locations.get(min_left).longitude + locations.get(min_right).longitude)/2;
-              return new LatLng(lat, lng);
+
+              LatLng southwest = new LatLng(locations.get(min_bottom).latitude, locations.get(min_left).longitude);
+              LatLng northeast = new LatLng(locations.get(min_up).latitude, locations.get(min_right).longitude);
+              LatLngBounds bounds = new LatLngBounds(southwest, northeast);
+              return bounds;
+       }
+
+       public static LatLng getLocationWindowCenter(List<LatLng> locations)
+       {
+              LatLngBounds bounds = getLocationWindow(locations);
+              return bounds.getCenter();
        }
 
 }

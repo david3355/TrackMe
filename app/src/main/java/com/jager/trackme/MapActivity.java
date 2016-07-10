@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
@@ -22,6 +23,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -30,14 +32,13 @@ import com.jager.trackme.database.PositionsTableDef;
 import com.jager.trackme.history.HistoryInterval;
 import com.jager.trackme.history.HistoryManager;
 import com.jager.trackme.util.BitmapHelper;
-import com.jager.trackme.util.Calculator;
+import com.jager.trackme.util.MapCalculator;
 import com.jager.trackme.history.interval_list.IntervalDataProvider;
 import com.jager.trackme.history.interval_list.IntervalListAdapter;
 import com.jager.trackme.util.DateTimeFormats;
 import com.jager.trackme.util.ModifiedDate;
 
 import org.joda.time.DateTime;
-import org.joda.time.MutableDateTime;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -144,15 +145,29 @@ public class MapActivity extends FragmentActivity implements
                      markers.add(marker);
               }
 
+              setSeekBar(selectedLocations);
+
               PolylineOptions polylineOptions = new PolylineOptions();
               polylineOptions.addAll(selectedLocations);
               polylineOptions.color(Color.BLUE);
               polylineOptions.clickable(true);
               polylineOptions.width(4);
               map.addPolyline(polylineOptions);
-              LatLng avgPosition = Calculator.getLocationWindow(selectedLocations);
-              map.moveCamera(CameraUpdateFactory.newLatLngZoom(avgPosition, 11)); // TODO: zoomolás a window-tól függjön!
-              setSeekBar(selectedLocations);
+              map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback()
+              {
+                     @Override
+                     public void onMapLoaded()
+                     {
+                            zoomToBounds();
+                            Log.d("MapActivity", "Map loaded!");
+                     }
+              });
+       }
+
+       private void zoomToBounds()
+       {
+              LatLngBounds bound = MapCalculator.getLocationWindow(selectedLocations);
+              map.moveCamera(CameraUpdateFactory.newLatLngBounds(bound, 50));
        }
 
        private BitmapDescriptor getDefaultMarkerIcon()
@@ -172,13 +187,13 @@ public class MapActivity extends FragmentActivity implements
               seekbar_locations.setOnSeekBarChangeListener(new LocationsSeekbarChangeListener());
        }
 
-       private void showDatePickerDialog(TextView textView, DateTime defaultDate)
+       private void showDatePickerDialog(DateTime defaultDate)
        {
               selectedDateTime = defaultDate;
               new DatePickerDialog(this, this, defaultDate.getYear(), defaultDate.getMonthOfYear() - 1, defaultDate.getDayOfMonth()).show();
        }
 
-       private void showTimePickerDialog(TextView textView, DateTime defaultTime)
+       private void showTimePickerDialog(DateTime defaultTime)
        {
               selectedDateTime = defaultTime;
               new TimePickerDialog(this, this, defaultTime.getHourOfDay(), defaultTime.getMinuteOfHour(), true).show();
@@ -221,25 +236,25 @@ public class MapActivity extends FragmentActivity implements
               switch (view.getId())
               {
                      case R.id.txt_from_date:
-                            showDatePickerDialog(txt_from_date, dtFrom);
+                            showDatePickerDialog(dtFrom);
                             modifiedDate = ModifiedDate.FROM_DATE_MODIFIED;
                             break;
                      case R.id.txt_from_time:
-                            showTimePickerDialog(txt_from_time, dtFrom);
+                            showTimePickerDialog(dtFrom);
                             modifiedDate = ModifiedDate.FROM_DATE_MODIFIED;
                             break;
                      case R.id.txt_to_date:
-                            showDatePickerDialog(txt_to_date, dtTo);
+                            showDatePickerDialog(dtTo);
                             modifiedDate = ModifiedDate.TO_DATE_MODIFIED;
                             break;
                      case R.id.txt_to_time:
-                            showTimePickerDialog(txt_to_time, dtTo);
+                            showTimePickerDialog(dtTo);
                             modifiedDate = ModifiedDate.TO_DATE_MODIFIED;
                             break;
               }
        }
 
-       private  void modifyDate(ModifiedDate modified, DateTime newDateTime)
+       private void modifyDate(ModifiedDate modified, DateTime newDateTime)
        {
               switch (modified)
               {
@@ -271,8 +286,11 @@ public class MapActivity extends FragmentActivity implements
               @Override
               public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
               {
-                     Marker selectedMarker = markers.get(progress);
-                     selectLocation(selectedMarker);
+                     if(fromUser)
+                     {
+                            Marker selectedMarker = markers.get(progress);
+                            selectLocation(selectedMarker);
+                     }
               }
 
               @Override
