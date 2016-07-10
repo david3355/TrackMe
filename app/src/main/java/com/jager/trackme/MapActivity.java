@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MapActivity extends FragmentActivity implements
-        OnMapReadyCallback, ExpandableListView.OnGroupClickListener, ExpandableListView.OnGroupCollapseListener, ExpandableListView.OnChildClickListener, View.OnClickListener, DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener
+        OnMapReadyCallback, ExpandableListView.OnGroupClickListener, ExpandableListView.OnGroupCollapseListener, ExpandableListView.OnChildClickListener, View.OnClickListener, DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener, GoogleMap.OnMarkerClickListener
 {
 
        private GoogleMap map;
@@ -97,6 +97,7 @@ public class MapActivity extends FragmentActivity implements
        public void onMapReady(GoogleMap googleMap)
        {
               map = googleMap;
+              map.setOnMarkerClickListener(this);
               setLastDayPositions();
        }
 
@@ -122,9 +123,9 @@ public class MapActivity extends FragmentActivity implements
               map.clear();
               if (positions.size() == 0)
               {
-                     seekbar_locations.setEnabled(false);
+                     seekbar_locations.setVisibility(View.INVISIBLE);
                      return;
-              } else seekbar_locations.setEnabled(true);
+              } else seekbar_locations.setVisibility(View.VISIBLE);
               selectedLocations = new ArrayList<>();
               markers = new ArrayList<>();
               MarkerOptions markerOptions;
@@ -159,7 +160,6 @@ public class MapActivity extends FragmentActivity implements
                      public void onMapLoaded()
                      {
                             zoomToBounds();
-                            Log.d("MapActivity", "Map loaded!");
                      }
               });
        }
@@ -281,12 +281,20 @@ public class MapActivity extends FragmentActivity implements
               setPositionsBetween(dtFrom, dtTo);
        }
 
+       @Override
+       public boolean onMarkerClick(Marker marker)
+       {
+              int index = markers.indexOf(marker);
+              if (index != -1) seekbar_locations.setProgress(index);
+              return false;
+       }
+
        private class LocationsSeekbarChangeListener implements SeekBar.OnSeekBarChangeListener
        {
               @Override
               public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
               {
-                     if(fromUser)
+                     if (fromUser)
                      {
                             Marker selectedMarker = markers.get(progress);
                             selectLocation(selectedMarker);
