@@ -99,7 +99,6 @@ public class IntervalListAdapter extends BaseExpandableListAdapter
               }
               TextView txtChild = (TextView) convertView.findViewById(R.id.txt_child);
               txtChild.setText(childTitle);
-
               return convertView;
        }
 

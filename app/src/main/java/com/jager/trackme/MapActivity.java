@@ -6,11 +6,13 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.ExpandableListView;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -45,23 +47,32 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MapActivity extends FragmentActivity implements
-        OnMapReadyCallback, ExpandableListView.OnGroupClickListener, ExpandableListView.OnGroupCollapseListener, ExpandableListView.OnChildClickListener, View.OnClickListener, DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener, GoogleMap.OnMarkerClickListener
+        OnMapReadyCallback, ExpandableListView.OnGroupClickListener, ExpandableListView.OnGroupCollapseListener,
+        ExpandableListView.OnChildClickListener, View.OnClickListener, DatePickerDialog.OnDateSetListener,
+        TimePickerDialog.OnTimeSetListener, GoogleMap.OnMarkerClickListener, CheckBox.OnCheckedChangeListener
 {
+       private ExpandableListView expList;
+       private TextView txt_from_date, txt_from_time, txt_to_date, txt_to_time;
+       private SeekBar seekbar_locations;
+       private CheckBox check_posvisible, check_zoompos;
+       private ImageView btn_mapsettings, btn_boundzoom;
+       private LinearLayout panel_mapoptions;
 
        private GoogleMap map;
        private LocationsManager locDatabase;
        private List<LatLng> selectedLocations;
        private List<Marker> markers;
-
+       private List<Long> timestamps;
        private HashMap<String, List<HistoryInterval>> intervals;
-       private List<String> intervalSelector;
-       private ExpandableListView expList;
        private IntervalListAdapter adapter;
-       private TextView txt_from_date, txt_from_time, txt_to_date, txt_to_time;
-       private SeekBar seekbar_locations;
+       private List<String> intervalSelector;
        private DateTime dtFrom, dtTo, selectedDateTime;
        private ModifiedDate modifiedDate;
-
+       private boolean zoomToPosition;
+       private boolean addMarkers;
+       private MarkerOptions selectedPosMarkerOptions;
+       private Marker selectedPosMarker;
+       private int pathLineWidht;
 
        @Override
        protected void onCreate(Bundle savedInstanceState)
@@ -74,6 +85,15 @@ public class MapActivity extends FragmentActivity implements
               txt_to_time = (TextView) findViewById(R.id.txt_to_time);
               seekbar_locations = (SeekBar) findViewById(R.id.seekbar_locations);
               expList = (ExpandableListView) findViewById(R.id.explist_intervals);
+              check_posvisible = (CheckBox) findViewById(R.id.check_posvisible);
+              check_zoompos = (CheckBox) findViewById(R.id.check_zoompos);
+              btn_mapsettings = (ImageView) findViewById(R.id.btn_mapsettings);
+              btn_boundzoom = (ImageView) findViewById(R.id.btn_boundzoom);
+              panel_mapoptions = (LinearLayout) findViewById(R.id.panel_mapoptions);
+              btn_mapsettings.setOnClickListener(this);
+              btn_boundzoom.setOnClickListener(this);
+              check_posvisible.setOnCheckedChangeListener(this);
+              check_zoompos.setOnCheckedChangeListener(this);
               expList.setOnGroupClickListener(this);
               expList.setOnGroupCollapseListener(this);
               expList.setOnChildClickListener(this);
@@ -85,11 +105,25 @@ public class MapActivity extends FragmentActivity implements
               txt_from_time.setOnClickListener(this);
               txt_to_date.setOnClickListener(this);
               txt_to_time.setOnClickListener(this);
-              locDatabase = LocationsManager.getInstance();
+
+              init();
+
               // Obtain the SupportMapFragment and get notified when the map is ready to be used.
               SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                       .findFragmentById(R.id.map);
               mapFragment.getMapAsync(this);
+       }
+
+       private void init()
+       {
+              locDatabase = LocationsManager.getInstance();
+              zoomToPosition = false;
+              addMarkers = false;
+              selectedPosMarkerOptions = new MarkerOptions();
+              selectedPosMarkerOptions.icon(getOwnMarkerIcon(R.drawable.gpoint));
+              selectedPosMarkerOptions.anchor(0.5f, 0.5f);
+              selectedPosMarker = null;
+              pathLineWidht = 6;
        }
 
 
@@ -127,23 +161,35 @@ public class MapActivity extends FragmentActivity implements
                      return;
               } else seekbar_locations.setVisibility(View.VISIBLE);
               selectedLocations = new ArrayList<>();
-              markers = new ArrayList<>();
+              timestamps = new ArrayList<>();
               MarkerOptions markerOptions;
-              BitmapDescriptor icon = getOwnMarkerIcon();
+              BitmapDescriptor icon = getOwnMarkerIcon(R.drawable.point);
               LatLng latLng;
               Marker marker;
+              if (markers != null)
+              {
+                     markers.clear();
+                     markers = null;
+              }
+              if (addMarkers) markers = new ArrayList<>();
+
               for (PositionsTableDef p : positions)
               {
                      latLng = new LatLng(p.getLatitude(), p.getLongitude());
                      selectedLocations.add(latLng);
-                     markerOptions = new MarkerOptions();
-                     markerOptions.icon(icon);
-                     markerOptions.position(latLng);
-                     markerOptions.snippet(String.format("[%s;%s]", latLng.latitude, latLng.longitude));
-                     markerOptions.title(new DateTime(p.getTimestamp()).toString(DateTimeFormats.DATETIME_FORMAT));
-                     markerOptions.anchor(0.5f, 0.5f);
-                     marker = map.addMarker(markerOptions);
-                     markers.add(marker);
+                     timestamps.add(p.getTimestamp());
+
+                     if (addMarkers)
+                     {
+                            markerOptions = new MarkerOptions();
+                            markerOptions.icon(icon);
+                            markerOptions.position(latLng);
+                            markerOptions.snippet(String.format("[%s;%s]", latLng.latitude, latLng.longitude));
+                            markerOptions.title(new DateTime(p.getTimestamp()).toString(DateTimeFormats.DATETIME_FORMAT));
+                            markerOptions.anchor(0.5f, 0.5f);
+                            marker = map.addMarker(markerOptions);
+                            markers.add(marker);
+                     }
               }
 
               setSeekBar(selectedLocations);
@@ -152,7 +198,7 @@ public class MapActivity extends FragmentActivity implements
               polylineOptions.addAll(selectedLocations);
               polylineOptions.color(Color.BLUE);
               polylineOptions.clickable(true);
-              polylineOptions.width(4);
+              polylineOptions.width(pathLineWidht);
               map.addPolyline(polylineOptions);
               map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback()
               {
@@ -166,8 +212,11 @@ public class MapActivity extends FragmentActivity implements
 
        private void zoomToBounds()
        {
-              LatLngBounds bound = MapCalculator.getLocationWindow(selectedLocations);
-              map.moveCamera(CameraUpdateFactory.newLatLngBounds(bound, 50));
+              if (selectedLocations.size() > 0)
+              {
+                     LatLngBounds bound = MapCalculator.getLocationWindow(selectedLocations);
+                     map.moveCamera(CameraUpdateFactory.newLatLngBounds(bound, 50));
+              }
        }
 
        private BitmapDescriptor getDefaultMarkerIcon()
@@ -175,9 +224,9 @@ public class MapActivity extends FragmentActivity implements
               return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN);
        }
 
-       private BitmapDescriptor getOwnMarkerIcon()
+       private BitmapDescriptor getOwnMarkerIcon(int imageResourceID)
        {
-              Bitmap scaledMarkerImage = BitmapHelper.adjustImage(this, R.drawable.point);
+              Bitmap scaledMarkerImage = BitmapHelper.adjustImage(this, imageResourceID);
               return BitmapDescriptorFactory.fromBitmap(scaledMarkerImage);
        }
 
@@ -202,7 +251,7 @@ public class MapActivity extends FragmentActivity implements
        @Override
        public boolean onGroupClick(ExpandableListView parent, View view, int groupPosition, long id)
        {
-              LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 350);
+              LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 400);
               expList.setLayoutParams(params);
               return false;
        }
@@ -227,7 +276,20 @@ public class MapActivity extends FragmentActivity implements
        private void selectLocation(Marker marker)
        {
               marker.showInfoWindow();
-              map.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18));
+              if (zoomToPosition)
+                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 18));
+       }
+
+       private void selectLocation(LatLng position, DateTime time)
+       {
+              if (selectedPosMarker != null) selectedPosMarker.remove();
+              selectedPosMarkerOptions.position(position);
+              selectedPosMarkerOptions.snippet(String.format("[%s;%s]", position.latitude, position.longitude));
+              selectedPosMarkerOptions.title(time.toString(DateTimeFormats.DATETIME_FORMAT));
+              selectedPosMarker = map.addMarker(selectedPosMarkerOptions);
+              selectedPosMarker.showInfoWindow();
+              if (zoomToPosition)
+                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(selectedPosMarker.getPosition(), 18));
        }
 
        @Override
@@ -250,6 +312,14 @@ public class MapActivity extends FragmentActivity implements
                      case R.id.txt_to_time:
                             showTimePickerDialog(dtTo);
                             modifiedDate = ModifiedDate.TO_DATE_MODIFIED;
+                            break;
+                     case R.id.btn_mapsettings:
+                            if (panel_mapoptions.getVisibility() == View.VISIBLE)
+                                   panel_mapoptions.setVisibility(View.GONE);
+                            else panel_mapoptions.setVisibility(View.VISIBLE);
+                            break;
+                     case R.id.btn_boundzoom:
+                            zoomToBounds();
                             break;
               }
        }
@@ -289,6 +359,21 @@ public class MapActivity extends FragmentActivity implements
               return false;
        }
 
+       @Override
+       public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked)
+       {
+              switch (compoundButton.getId())
+              {
+                     case R.id.check_posvisible:
+                            addMarkers = isChecked;
+                            setPositionsBetween(dtFrom, dtTo);
+                            break;
+                     case R.id.check_zoompos:
+                            zoomToPosition = isChecked;
+                            break;
+              }
+       }
+
        private class LocationsSeekbarChangeListener implements SeekBar.OnSeekBarChangeListener
        {
               @Override
@@ -296,8 +381,13 @@ public class MapActivity extends FragmentActivity implements
               {
                      if (fromUser)
                      {
-                            Marker selectedMarker = markers.get(progress);
-                            selectLocation(selectedMarker);
+                            if (markers != null)
+                            {
+                                   selectLocation(markers.get(progress));
+                            } else
+                            {
+                                   selectLocation(selectedLocations.get(progress), new DateTime(timestamps.get(progress)));
+                            }
                      }
               }
 

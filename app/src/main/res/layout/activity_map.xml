@@ -5,79 +5,119 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TableLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-        <TableRow>
+        <TableLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
 
-            <TextView
-                android:layout_gravity="left|center_vertical"
-                android:layout_marginLeft="@dimen/date_margin"
-                android:text="@string/from"/>
-
-            <LinearLayout>
-
-                <TextView
-                    android:id="@+id/txt_from_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="left|center_vertical"
-                    android:layout_margin="@dimen/date_margin"
-                    android:text="2016. 07. 08."
-                    android:textSize="@dimen/date_textsize"
-                    android:textStyle="bold"/>
+            <TableRow>
 
                 <TextView
-                    android:id="@+id/txt_from_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:layout_gravity="left|center_vertical"
-                    android:layout_margin="@dimen/date_margin"
-                    android:text="12:55"
-                    android:textColor="@color/colorLightBlue"
-                    android:textSize="@dimen/date_textsize"
-                    android:textStyle="bold"/>
-            </LinearLayout>
+                    android:layout_marginLeft="@dimen/date_margin"
+                    android:text="@string/from"/>
+
+                <LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txt_from_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="left|center_vertical"
+                        android:layout_margin="@dimen/date_margin"
+                        android:text="2016. 07. 08."
+                        android:textSize="@dimen/date_textsize"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/txt_from_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="left|center_vertical"
+                        android:layout_margin="@dimen/date_margin"
+                        android:text="12:55"
+                        android:textColor="@color/colorLightBlue"
+                        android:textSize="@dimen/date_textsize"
+                        android:textStyle="bold"/>
+                </LinearLayout>
 
 
-        </TableRow>
+            </TableRow>
 
-        <TableRow>
-
-            <TextView
-                android:layout_gravity="left|center_vertical"
-                android:layout_marginLeft="@dimen/date_margin"
-                android:text="@string/to"/>
-
-
-            <LinearLayout>
+            <TableRow>
 
                 <TextView
-                    android:id="@+id/txt_to_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:layout_gravity="left|center_vertical"
-                    android:layout_margin="@dimen/date_margin"
-                    android:text="2016. 07. 08."
-                    android:textSize="@dimen/date_textsize"
-                    android:textStyle="bold"/>
+                    android:layout_marginLeft="@dimen/date_margin"
+                    android:text="@string/to"/>
 
-                <TextView
-                    android:id="@+id/txt_to_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="left|center_vertical"
-                    android:layout_margin="@dimen/date_margin"
-                    android:text="12:55"
-                    android:textColor="@color/colorLightBlue"
-                    android:textSize="@dimen/date_textsize"
-                    android:textStyle="bold"/>
-            </LinearLayout>
 
-        </TableRow>
+                <LinearLayout>
 
-    </TableLayout>
+                    <TextView
+                        android:id="@+id/txt_to_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="left|center_vertical"
+                        android:layout_margin="@dimen/date_margin"
+                        android:text="2016. 07. 08."
+                        android:textSize="@dimen/date_textsize"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:id="@+id/txt_to_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="left|center_vertical"
+                        android:layout_margin="@dimen/date_margin"
+                        android:text="12:55"
+                        android:textColor="@color/colorLightBlue"
+                        android:textSize="@dimen/date_textsize"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+            </TableRow>
+
+        </TableLayout>
+
+        <ImageView
+            android:id="@+id/btn_mapsettings"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="right|center_vertical"
+            android:layout_margin="5dp"
+            android:src="@drawable/settings"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/panel_mapoptions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <CheckBox
+            android:id="@+id/check_posvisible"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/check_margin"
+            android:text="@string/pos_visible"
+            />
+
+        <CheckBox
+            android:id="@+id/check_zoompos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/check_margin"
+            android:text="@string/zoom_pos"
+            />
+
+    </LinearLayout>
 
     <ExpandableListView
         android:id="@+id/explist_intervals"
@@ -88,7 +128,6 @@
         android:divider="#A4C739"
         android:dividerHeight="0.5dp"
         android:fadeScrollbars="false"
-        android:minHeight="100dp"
         android:scrollbars="vertical"
         >
     </ExpandableListView>
@@ -107,21 +146,25 @@
             android:layout_height="match_parent"
             tools:context="com.jager.trackme.MapActivity"/>
 
+        <ImageView
+            android:id="@+id/btn_boundzoom"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_gravity="top|right"
+            android:layout_margin="10dp"
+            android:src="@drawable/framebutton"/>
+
         <SeekBar
             android:id="@+id/seekbar_locations"
             android:layout_width="match_parent"
             android:layout_height="35dp"
+            android:layout_gravity="bottom"
             android:layout_marginBottom="35dp"
             android:layout_marginLeft="7dp"
             android:layout_marginRight="7dp"
-            android:background="@drawable/roundcorner_background"
-            android:layout_gravity="bottom"/>
+            android:background="@drawable/roundcorner_background"/>
 
     </FrameLayout>
-
-
-
-
 
 
 </LinearLayout>

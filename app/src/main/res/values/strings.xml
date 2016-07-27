@@ -12,5 +12,7 @@
     <string name="accuracy">Accuracy:</string>
     <string name="from">From:</string>
     <string name="to">To:</string>
+    <string name="pos_visible">Positions visible</string>
+    <string name="zoom_pos">Zoom to positions</string>
 
 </resources>

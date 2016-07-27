@@ -8,6 +8,7 @@
     <dimen name="svcbutton_height">27dp</dimen>
     <dimen name="date_textsize">15dp</dimen>
     <dimen name="date_margin">3dp</dimen>
+    <dimen name="check_margin">3dp</dimen>
 
 
 </resources>
